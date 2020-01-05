@@ -46,8 +46,8 @@ module ActionView
         @variant = @lookup_context.variants.first
         old_current_template = @current_template
         @current_template = self
-
-        @content = view_context.capture(&block) if block_given?
+        @outlets = ContentStore.new(view_context)
+        @outlets.set(:default, &block) if block_given?
         validate!
 
         send(self.class.call_method_name(@variant))
@@ -93,7 +93,11 @@ module ActionView
         @request ||= controller.request
       end
 
-      attr_reader :content, :view_context
+      def content(key = :default, **options, &block)
+        @outlets.get(key, **options, &block)
+      end
+
+      attr_reader :view_context
 
       class << self
         def inherited(child)

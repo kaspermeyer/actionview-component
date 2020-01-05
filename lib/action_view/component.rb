@@ -10,6 +10,7 @@ module ActionView
     extend ActiveSupport::Autoload
 
     autoload :Base
+    autoload :ContentStore
     autoload :Conversion
     autoload :Preview
     autoload :Previewable

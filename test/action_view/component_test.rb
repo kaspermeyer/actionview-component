@@ -232,6 +232,54 @@ class ActionView::ComponentTest < ActionView::Component::TestCase
     assert_html_matches "<span>The Awesome post component!</span>", render_inline(post).to_html
   end
 
+  def test_multiple_content_areas_with_content_outlets
+    result = render_inline(ContentOutletComponent) do |content|
+      content.for(:header) { "Custom header" }
+      content.for(:body)   { "Custom body" }
+      content.for(:footer) { "Custom footer" }
+    end
+
+    assert_html_matches <<~HTML, result.to_html
+      <span>Custom header</span>
+      <span>Custom body</span>
+      <span>Custom footer</span>
+    HTML
+  end
+
+  def test_content_outlets_with_default_content
+    result = render_inline(ContentOutletComponent) do |content|
+      content.for(:body)   { "Custom body" }
+      content.for(:footer) { "Custom footer" }
+    end
+
+    assert_html_matches <<~HTML, result.to_html
+      <span>Default header</span>
+      <span>Custom body</span>
+      <span>Custom footer</span>
+    HTML
+  end
+
+  def test_optional_content_outlets_without_content_renders_nothing
+    result = render_inline(ContentOutletComponent) do |content|
+      content.for(:header) { "Custom header" }
+      content.for(:body)   { "Custom body" }
+    end
+
+    assert_html_matches <<~HTML, result.to_html
+      <span>Custom header</span>
+      <span>Custom body</span>
+      <span></span>
+    HTML
+  end
+
+  def test_required_content_outlets_without_content_raises_error
+    exception = assert_raise ArgumentError do
+      render_inline(ContentOutletComponent)
+    end
+
+    assert_includes exception.message, "Content outlet `:body` must be defined"
+  end
+
   private
 
   def modify_file(file, content)
